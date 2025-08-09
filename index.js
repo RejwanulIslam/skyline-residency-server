@@ -4,6 +4,10 @@ require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
 
+//midileWare
+app.use(cors())
+app.use(express.json())
+
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.0xslwlb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -19,6 +23,21 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
+
+       const cupponCollection=client.db("Skyline-Residency").collection("cuppon")
+       const apartmentCollection=client.db("Skyline-Residency").collection("apartment")
+          
+
+
+       app.get('/cuppon',async(req,res)=>{
+        const result=await cupponCollection.find().toArray()
+        res.send(result)
+       })
+
+       app.get('/apartment',async(req,res)=>{
+        const result=await apartmentCollection.find().toArray()
+        res.send(result)
+       })
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         // Send a ping to confirm a successful connection
@@ -32,8 +51,10 @@ async function run() {
 run().catch(console.dir);
 
 
-
+app.get('/',(req,res)=>{
+    res.send('server is running')
+})
 
 app.listen(port, () => {
-    console.log(`The building is open`)
+    console.log(`The building is open ${port}`)
 })
