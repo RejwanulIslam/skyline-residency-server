@@ -27,6 +27,8 @@ async function run() {
 
         const cupponCollection = client.db("Skyline-Residency").collection("cuppon")
         const apartmentCollection = client.db("Skyline-Residency").collection("apartment")
+        const agreementCollection = client.db("Skyline-Residency").collection("agreement")
+        const userCollection = client.db("Skyline-Residency").collection("user")
 
         //jwt
         app.post('/jwt', async (req, res) => {
@@ -36,10 +38,10 @@ async function run() {
         })
 
         const veryfyToken = (req, res, next) => {
-            if (!req.headers.Authorization) {
+            if (!req.headers.authorization) {
                 return res.status(401).send({ message: 'forbidding access' })
             }
-            const token = req.headers.Authorization.split(' ')[1]
+            const token = req.headers.authorization.split(' ')[1]
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
                 if (err) {
                     return res.status(401).send({ message: 'forbidding access' })
@@ -49,15 +51,66 @@ async function run() {
                 next()
             })
         }
+        //cupon
         app.get('/cuppon', async (req, res) => {
             const result = await cupponCollection.find().toArray()
             res.send(result)
         })
 
+
+        //apartment
         app.get('/apartment', async (req, res) => {
             const result = await apartmentCollection.find().toArray()
             res.send(result)
         })
+
+        //agreement 
+        //post agreement data
+        app.post('/agreement', veryfyToken, async (req, res) => {
+            const agreementData = req.body
+            const result = await agreementCollection.insertOne(agreementData)
+            res.send(result) 
+        })
+
+        //get all agreement data
+        app.get('/agreement', async (req, res) => {
+            const result = await agreementCollection.find().toArray()
+            res.send(result)
+        })
+
+        //user
+        //post user data
+        app.post('/user', veryfyToken, async (req, res) => {
+            const userData = req.body
+            const result = await userCollection.insertOne(userData)
+            res.send(result)
+        })
+        //get all user data
+        app.get('/user', async (req, res) => {
+            const result = await userCollection.find().toArray()
+            res.send(result)
+        })
+        //get user role
+        app.get('/user/:email', veryfyToken, async (req, res) => {
+            const userEmail = req.params.email
+            const quary = { email: userEmail }
+            const data = await userCollection.findOne(quary)
+            console.log(data)
+
+            let role = 'user'
+            if (data.role == 'admin') {
+                role = 'admin'
+            }
+            if (data.role == 'member') {
+                role = 'member'
+            }
+            console.log(role)
+            res.send({ role })
+        })
+
+
+
+
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         // Send a ping to confirm a successful connection
