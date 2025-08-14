@@ -10,7 +10,7 @@ app.use(cors())
 app.use(express.json())
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.0xslwlb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -69,7 +69,7 @@ async function run() {
         app.post('/agreement', veryfyToken, async (req, res) => {
             const agreementData = req.body
             const result = await agreementCollection.insertOne(agreementData)
-            res.send(result) 
+            res.send(result)
         })
 
         //get all agreement data
@@ -90,18 +90,42 @@ async function run() {
             const result = await userCollection.find().toArray()
             res.send(result)
         })
+
+        // update status
+        app.patch('/user', async (req, res) => {
+            const useremail = req.query.useremail
+            const agreementId = req.query.agreementId
+            console.log(useremail, agreementId)
+            const emailFilter = { email: useremail }
+            const idFilter = { _id: new ObjectId(agreementId) }
+            const updatedDocEmail = {
+                $set: {
+                    role: 'member',
+
+                }
+            }
+            const updatedstatus = {
+                $set: {
+                    status: 'checked',
+
+                }
+            }
+            const result = await userCollection.updateOne(emailFilter, updatedDocEmail)
+            const result2 = await agreementCollection.updateOne(idFilter, updatedstatus)
+            res.send({ result, result2 })
+        })
+
         //get user role
         app.get('/user/:email', veryfyToken, async (req, res) => {
             const userEmail = req.params.email
             const quary = { email: userEmail }
             const data = await userCollection.findOne(quary)
-            console.log(data)
-
+           
             let role = 'user'
-            if (data.role == 'admin') {
+             if(data?.role == 'admin') {
                 role = 'admin'
             }
-            if (data.role == 'member') {
+            if (data?.role == 'member') {
                 role = 'member'
             }
             console.log(role)
