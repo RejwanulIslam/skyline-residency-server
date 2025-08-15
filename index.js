@@ -93,24 +93,46 @@ async function run() {
 
         // update status
         app.patch('/user', async (req, res) => {
-            const useremail = req.query.useremail
             const agreementId = req.query.agreementId
-            console.log(useremail, agreementId)
-            const emailFilter = { email: useremail }
-            const idFilter = { _id: new ObjectId(agreementId) }
-            const updatedDocEmail = {
-                $set: {
-                    role: 'member',
 
+
+            const useremail = req.query.useremail
+
+            const removeMember = req.query.removeMember
+
+            // const emailFilter = { email: useremail }
+            // const removeMemberFilter = { email: removeMember }
+
+            const idFilter = { _id: new ObjectId(agreementId) }
+            let emailAndMembetFilter = {}
+
+            let UpdateEmailAndMember = {}
+
+            if (useremail) {
+                emailAndMembetFilter={ email: useremail }
+                UpdateEmailAndMember = {
+                    $set: {
+                        role: 'member',
+                    }
                 }
             }
+            if (removeMember) {
+                emailAndMembetFilter={ email: removeMember }
+                UpdateEmailAndMember = {
+                    $set: {
+                        role: 'user'
+                    }
+                }
+            }
+
+
             const updatedstatus = {
                 $set: {
                     status: 'checked',
 
                 }
             }
-            const result = await userCollection.updateOne(emailFilter, updatedDocEmail)
+            const result = await userCollection.updateOne(emailAndMembetFilter, UpdateEmailAndMember)
             const result2 = await agreementCollection.updateOne(idFilter, updatedstatus)
             res.send({ result, result2 })
         })
@@ -120,9 +142,9 @@ async function run() {
             const userEmail = req.params.email
             const quary = { email: userEmail }
             const data = await userCollection.findOne(quary)
-           
+
             let role = 'user'
-             if(data?.role == 'admin') {
+            if (data?.role == 'admin') {
                 role = 'admin'
             }
             if (data?.role == 'member') {
