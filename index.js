@@ -3,6 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 const app = express()
 const jwt = require('jsonwebtoken');
+const stripe=require("stripe")(process.env.STRIPE_SECRET_KEY)
 const port = process.env.PORT || 5000
 
 //midileWare
@@ -154,7 +155,16 @@ async function run() {
             res.send({ role })
         })
 
-
+        //payment reletade api
+        app.post('/create-payment-intent',async (req,res)=>{
+            const {totalPrice}= req.body
+            const paymentIntent=await stripe.paymentIntents.create({
+                amount:totalPrice*100,
+                currency:"usd",
+                payment_method_types:["card"]
+            })
+               res.send({clientSecret:paymentIntent.client_secret})
+        })
 
 
         // Connect the client to the server	(optional starting in v4.7)
