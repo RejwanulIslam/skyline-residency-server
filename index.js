@@ -30,6 +30,7 @@ async function run() {
         const apartmentCollection = client.db("Skyline-Residency").collection("apartment")
         const agreementCollection = client.db("Skyline-Residency").collection("agreement")
         const userCollection = client.db("Skyline-Residency").collection("user")
+        const paymentHistoryCollection = client.db("Skyline-Residency").collection("paymentHistory")
 
         //jwt
         app.post('/jwt', async (req, res) => {
@@ -164,6 +165,16 @@ async function run() {
                 payment_method_types:["card"]
             })
                res.send({clientSecret:paymentIntent.client_secret})
+        })
+        app.post('/paymentHistory',async(req,res)=>{
+            const data=req.body
+            const result=await paymentHistoryCollection.insertOne(data)
+            res.send(result)
+        })
+        // get paymentHistory data
+        app.get('/paymentHistory',async(req,res)=>{
+            const result=await paymentHistoryCollection.find().toArray()
+            res.send(result)
         })
 
 
