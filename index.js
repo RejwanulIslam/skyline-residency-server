@@ -3,7 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 const app = express()
 const jwt = require('jsonwebtoken');
-const stripe=require("stripe")(process.env.STRIPE_SECRET_KEY)
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
 const port = process.env.PORT || 5000
 
 //midileWare
@@ -60,11 +60,7 @@ async function run() {
         })
 
 
-        //apartment
-        app.get('/apartment', async (req, res) => {
-            const result = await apartmentCollection.find().toArray()
-            res.send(result)
-        })
+
 
         //agreement 
         //post agreement data
@@ -111,7 +107,7 @@ async function run() {
             let UpdateEmailAndMember = {}
 
             if (useremail) {
-                emailAndMembetFilter={ email: useremail }
+                emailAndMembetFilter = { email: useremail }
                 UpdateEmailAndMember = {
                     $set: {
                         role: 'member',
@@ -119,7 +115,7 @@ async function run() {
                 }
             }
             if (removeMember) {
-                emailAndMembetFilter={ email: removeMember }
+                emailAndMembetFilter = { email: removeMember }
                 UpdateEmailAndMember = {
                     $set: {
                         role: 'user'
@@ -157,23 +153,41 @@ async function run() {
         })
 
         //payment reletade api
-        app.post('/create-payment-intent',async (req,res)=>{
-            const {totalPrice}= req.body
-            const paymentIntent=await stripe.paymentIntents.create({
-                amount:totalPrice*100,
-                currency:"usd",
-                payment_method_types:["card"]
+        app.post('/create-payment-intent', async (req, res) => {
+            const { totalPrice } = req.body
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: totalPrice * 100,
+                currency: "usd",
+                payment_method_types: ["card"]
             })
-               res.send({clientSecret:paymentIntent.client_secret})
+            res.send({ clientSecret: paymentIntent.client_secret })
         })
-        app.post('/paymentHistory',async(req,res)=>{
-            const data=req.body
-            const result=await paymentHistoryCollection.insertOne(data)
+        app.post('/paymentHistory', async (req, res) => {
+            const data = req.body
+            const result = await paymentHistoryCollection.insertOne(data)
             res.send(result)
         })
         // get paymentHistory data
-        app.get('/paymentHistory',async(req,res)=>{
-            const result=await paymentHistoryCollection.find().toArray()
+        app.get('/paymentHistory', async (req, res) => {
+            const result = await paymentHistoryCollection.find().toArray()
+            res.send(result)
+        })
+
+        //pajenation
+
+        app.get('/productCount', async (req, res) => {
+            const result = await apartmentCollection.estimatedDocumentCount();
+            res.send({ result })
+        })
+
+        //apartment
+        app.get('/apartment', async (req, res) => {
+            const page=parseInt(req.query.page)
+            const size=parseInt(req.query.size)
+            const result = await apartmentCollection.find()
+            .skip(page*size)
+            .limit(size)
+            .toArray();
             res.send(result)
         })
 
