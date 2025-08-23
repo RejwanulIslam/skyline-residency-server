@@ -76,6 +76,12 @@ async function run() {
             res.send(result)
         })
 
+        // agreement Count
+        app.get('/agreementCount',async(req,res)=>{
+            const result=await agreementCollection.estimatedDocumentCount();
+            res.send(result)
+        })
+
         //user
         //post user data
         app.post('/user', veryfyToken, async (req, res) => {
@@ -136,7 +142,7 @@ async function run() {
         })
 
         //get user role
-        app.get('/user/:email', veryfyToken, async (req, res) => {
+        app.get('/user/:email', async (req, res) => {
             const userEmail = req.params.email
             const quary = { email: userEmail }
             const data = await userCollection.findOne(quary)
@@ -175,7 +181,7 @@ async function run() {
 
         //pajenation
 
-        app.get('/productCount', async (req, res) => {
+        app.get('/apartmentCount', async (req, res) => {
             const result = await apartmentCollection.estimatedDocumentCount();
             res.send({ result })
         })
