@@ -54,9 +54,23 @@ async function run() {
             })
         }
         //cupon
+        app.post('/cuppon', async (req, res) => {
+            const data= req.body
+            const result = await cupponCollection.insertOne(data)
+            res.send(result)
+        })
+
         app.get('/cuppon', async (req, res) => {
             const result = await cupponCollection.find().toArray()
             res.send(result)
+        })
+        app.delete('/cuppon/:id',async(req,res)=>{
+           const id= req.params.id;
+           console.log(id)
+           const quary={_id:new ObjectId(id)}
+           const result=await cupponCollection.deleteOne(quary)
+           res.send(result)
+
         })
 
 
@@ -160,9 +174,11 @@ async function run() {
 
         //payment reletade api
         app.post('/create-payment-intent', async (req, res) => {
-            const { totalPrice } = req.body
+            const { totalPrice } = req.body 
+            const amount=parseInt(totalPrice*100)
+            console.log('llllllll',amount)
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: totalPrice * 100,
+                amount: amount,
                 currency: "usd",
                 payment_method_types: ["card"]
             })
