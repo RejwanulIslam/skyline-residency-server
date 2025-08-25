@@ -55,7 +55,7 @@ async function run() {
         }
         //cupon
         app.post('/cuppon', async (req, res) => {
-            const data= req.body
+            const data = req.body
             const result = await cupponCollection.insertOne(data)
             res.send(result)
         })
@@ -64,12 +64,29 @@ async function run() {
             const result = await cupponCollection.find().toArray()
             res.send(result)
         })
-        app.delete('/cuppon/:id',async(req,res)=>{
-           const id= req.params.id;
-           console.log(id)
-           const quary={_id:new ObjectId(id)}
-           const result=await cupponCollection.deleteOne(quary)
-           res.send(result)
+
+        app.patch('/cuppon/:id', async (req, res) => {
+            const id = req.params.id
+            const data = req.body
+            console.log(id)
+            const quary = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    cupponCode: data.cupponCode,
+                    description: data.description,
+                    discountPercentage: data.discountPercentage,
+                    type: data.type,
+                }
+            }
+            const result = await cupponCollection.updateOne(quary,updateDoc)
+             res.send(result)
+        })
+        app.delete('/cuppon/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const quary = { _id: new ObjectId(id) }
+            const result = await cupponCollection.deleteOne(quary)
+            res.send(result)
 
         })
 
@@ -91,8 +108,8 @@ async function run() {
         })
 
         // agreement Count
-        app.get('/agreementCount',async(req,res)=>{
-            const result=await agreementCollection.estimatedDocumentCount();
+        app.get('/agreementCount', async (req, res) => {
+            const result = await agreementCollection.estimatedDocumentCount();
             res.send(result)
         })
 
@@ -174,9 +191,9 @@ async function run() {
 
         //payment reletade api
         app.post('/create-payment-intent', async (req, res) => {
-            const { totalPrice } = req.body 
-            const amount=parseInt(totalPrice*100)
-            console.log('llllllll',amount)
+            const { totalPrice } = req.body
+            const amount = parseInt(totalPrice * 100)
+            console.log('llllllll', amount)
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: "usd",
@@ -204,12 +221,12 @@ async function run() {
 
         //apartment
         app.get('/apartment', async (req, res) => {
-            const page=parseInt(req.query.page)
-            const size=parseInt(req.query.size)
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
             const result = await apartmentCollection.find()
-            .skip(page*size)
-            .limit(size)
-            .toArray();
+                .skip(page * size)
+                .limit(size)
+                .toArray();
             res.send(result)
         })
 
